@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        #game-board {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .player {
+            border: 2px solid #333;
+            padding: 10px;
+            border-radius: 8px;
+            margin-right: 10px;
+        }
+
+        .card {
+            width: 50px;
+            height: 80px;
+            background: #fff;
+            border: 1px solid #333;
+            margin: 5px;
+            text-align: center;
+            line-height: 80px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .card-back {
+            background-color: #888;
+            color: #fff;
+        }
+    </style>
+    <title>Card Game</title>
+</head>
+<body>
+    <div id="game-board"></div>
+
+    <script>
+        const players = ['Computer 1', 'Computer 2', 'Computer 3', 'User'];
+        const cards = ['Ram', 'Sita', 'Laxman', 'Bharat'];
+        let deck = [];
+        let hands = [[], [], [], []];
+        let currentPlayerIndex = 3; // User starts as the current player
+
+        // Function to create a deck of cards
+        function createDeck() {
+            for (const card of cards) {
+                for (let i = 0; i < 4; i++) {
+                    deck.push(card);
+                }
+            }
+            deck.sort(() => Math.random() - 0.5);
+        }
+
+        // Function to distribute cards to players
+        function distributeCards() {
+            for (let i = 0; i < deck.length; i++) {
+                hands[i % 4].push(deck[i]);
+            }
+        }
+
+        // Function to render the game board
+        function renderGameBoard() {
+            const gameBoard = document.getElementById('game-board');
+            gameBoard.innerHTML = '';
+
+            for (let i = 0; i < players.length; i++) {
+                const playerDiv = document.createElement('div');
+                playerDiv.classList.add('player');
+                playerDiv.innerHTML = `<h3>${players[i]}</h3>`;
+
+                for (let j = 0; j < hands[i].length; j++) {
+                    const cardDiv = document.createElement('div');
+                    cardDiv.classList.add('card');
+                    if (i === 3 || (j === 0 && i !== 3)) { // Show the first card of the user and all cards of the other players
+                        cardDiv.textContent = hands[i][j];
+                        cardDiv.addEventListener('click', () => playTurn(i, j));
+                    } else {
+                        cardDiv.classList.add('card-back');
+                    }
+                    playerDiv.appendChild(cardDiv);
+                }
+
+                gameBoard.appendChild(playerDiv);
+            }
+        }
+
+        // Function to handle the user's turn
+        function playTurn(userIndex, cardIndex) {
+            if (userIndex === currentPlayerIndex) {
+                // User can play only when it's their turn
+                const playedCard = hands[userIndex][cardIndex];
+                hands[userIndex].splice(cardIndex, 1);
+                hands[(userIndex + 1) % 4].push(playedCard);
+
+                // Check for a win condition
+                if (checkWinCondition((userIndex + 1) % 4, playedCard)) {
+                    alert(`${players[(userIndex + 1) % 4]} wins!`);
+                    resetGame();
+                } else {
+                    // Move to the next player
+                    currentPlayerIndex = (currentPlayerIndex + 1) % 4;
+                    renderGameBoard();
+                }
+            }
+        }
+
+        // Function to check for a win condition
+        function checkWinCondition(playerIndex, playedCard) {
+            return hands[playerIndex].filter(card => card === playedCard).length === 4;
+        }
+
+        // Function to reset the game
+        function resetGame() {
+            deck = [];
+            hands = [[], [], [], []];
+            currentPlayerIndex = 3; // User starts as the current player
+            createDeck();
+            distributeCards();
+            renderGameBoard();
+        }
+
+        // Initial setup
+        createDeck();
+        distributeCards();
+        renderGameBoard();
+    </script>
+</body>
+</html>
